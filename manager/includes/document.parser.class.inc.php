@@ -102,7 +102,7 @@ class DocumentParser {
     }
     
     function __call($method_name, $arguments) {
-        switch($method_name) {
+        switch ($method_name) {
             case 'ParseCommand':
             case 'ParseInputOptions':
             case 'ProcessTVCommand':
@@ -194,6 +194,7 @@ class DocumentParser {
         if (method_exists($this->old, $method_name))
             return call_user_func_array(array($this->old, $method_name), $arguments);
     }
+    
     // constructor
     function __construct() {
         $this->loadExtension('DBAPI') or die('Could not load DBAPI class.'); // load DBAPI class
@@ -281,12 +282,12 @@ class DocumentParser {
     
     function executeParser($id = '') {
         ob_start();
-        set_error_handler(array(& $this, 'phpError'), E_ALL); //error_reporting(0);
+        set_error_handler(array(&$this, 'phpError'), E_ALL); //error_reporting(0);
         
         $this->http_status_code = '200';
 
         if (preg_match('@^[0-9]+$@', $id)) $this->directParse = 1;
-        else                              $this->directParse = 0;
+        else                               $this->directParse = 0;
         
         // get the settings
         if (!$this->db->conn)      $this->db->connect();

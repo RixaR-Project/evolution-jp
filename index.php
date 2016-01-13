@@ -59,10 +59,10 @@ if (is_file(MODX_BASE_PATH . 'assets/cache/basicConfig.php')) {
 		include_once(MODX_BASE_PATH . '/manager/includes/conditional_get.inc.php');
 }
 if (!defined('MODX_API_MODE')
-    && $cache_type == 2
-    && $site_status != 0
-    && count($_POST) < 1
-    && (time() < $cacheRefreshTime || $cacheRefreshTime == 0)) {
+        && $cache_type == 2
+        && $site_status != 0
+        && count($_POST) < 1
+        && (time() < $cacheRefreshTime || $cacheRefreshTime == 0)) {
     session_name($site_sessionname);
     session_cache_limiter('');
     session_start();

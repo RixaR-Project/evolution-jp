@@ -3,15 +3,12 @@
 $this->doc= new DocAPI;
 
 class DocAPI {
-	
 	var $mode;
 	
-	function DocAPI()
-	{
+	function DocAPI() {
 	}
 	
-	function create($f = array(), $groups = array())
-	{
+	function create($f = array(), $groups = array()) {
 		global $modx, $_lang;
 		$f = $this->correctResourceFields($f);
 		
@@ -20,17 +17,16 @@ class DocAPI {
 		$f['createdby'] = (!$f['createdby']) ? $modx->getLoginUserID() : $f['createdby'];
 		$f['editedon']  = $f['createdon'];
 		$f['editedby']  = $f['createdby'];
-		if(isset($f['published']) && $f['published']==1 && !isset($f['publishedon']))
+		if (isset($f['published']) && $f['published']==1 && !isset($f['publishedon']))
 		    $f['publishedon'] = $f['createdon'];
-		if(!$f['template'])
+		if (!$f['template'])
 		    $f['template'] = $modx->config['default_template'];
 		if (!empty($groups))
 		    $f['privatemgr'] = 1;
 		
 //		$f = $this->setPubStatus($f);
 		
-		switch($modx->config['docid_incrmnt_method'])
-		{
+		switch ($modx->config['docid_incrmnt_method']) {
 			case '1':
 				$from = '[+prefix+]site_content AS T0 LEFT JOIN [+prefix+]site_content AS T1 ON T0.id + 1 = T1.id';
 				$where = "T1.id IS NULL";
@@ -38,25 +34,23 @@ class DocAPI {
 				$docid = $modx->db->getValue($rs);
 				break;
 			case '2':
-				$rs = $modx->db->select('MAX(id)+1','[+prefix+]site_content');
+				$rs = $modx->db->select('MAX(id)+1', '[+prefix+]site_content');
 				$docid = $modx->db->getValue($rs);
 				break;
 			default:
 				$docid = '';
 		}
 
-		if(!empty($docid)) $f['id'] = $docid;
+		if (!empty($docid)) $f['id'] = $docid;
 		
 		$id = $modx->db->insert($f, '[+prefix+]site_content');
-		$this->replaceTVs($f,$id);
-		if(isset($f['parent']) && preg_match('@^[1-9][0-9]*$@',$f['parent']))
-		{
+		$this->replaceTVs($f, $id);
+		if (isset($f['parent']) && preg_match('@^[1-9][0-9]*$@', $f['parent'])) {
 			$parent = $f['parent'];
-			$modx->db->update(array('isfolder'=>'1'), '[+prefix+]site_content', "id='{$parent}'");
+			$modx->db->update(array('isfolder' => '1'), '[+prefix+]site_content', "id='{$parent}'");
 		}
 		
-		if (!empty($groups) && $id)
-		{
+		if (!empty($groups) && $id) {
 			foreach ($groups as $group) {
 				$modx->db->insert(array('document_group' => $group, 'document' => $id), '[+prefix+]document_groups');
 			}
@@ -65,34 +59,30 @@ class DocAPI {
 		return $id;
 	}
 	
-	function update($f = array(), $id = 0, $where = '')
-	{
+	function update($f = array(), $id = 0, $where = '') {
 		global $modx;
-		if(!preg_match('@^[0-9]+$@', $id)) return false;
-		if(empty($id))
-		{
-			if(isset($modx->documentIdentifier)) $id = $modx->documentIdentifier;
+		if (!preg_match('@^[0-9]+$@', $id)) return false;
+		if (empty($id)) {
+			if (isset($modx->documentIdentifier)) $id = $modx->documentIdentifier;
 			else return;
 		}
 		
-		if(is_string($f) && strpos($f,'=')!==false)
-		{
-			list($k,$v) = explode('=',$f,2);
+		if (is_string($f) && strpos($f, '=') !== false) {
+			list($k, $v) = explode('=', $f, 2);
 			$k = trim($k);
 			$v = trim($v);
 			$f = array();
 			$f[$k] = $v;
 		}
 		
-		if(!$f['template']) $f['template'] = $modx->getField('template',$id);
+		if (!$f['template']) $f['template'] = $modx->getField('template', $id);
 		
-		$rs = $this->replaceTVs($f,$id);
+		$rs = $this->replaceTVs($f, $id);
 		
 //		$f = $this->setPubStatus($f);
 		
 		$f['editedon'] = (!$f['editedon']) ? time() : $f['editedon'];
-		if(!isset($f['editedby']) && isset($_SESSION['mgrInternalKey']))
-		{
+		if (!isset($f['editedby']) && isset($_SESSION['mgrInternalKey'])) {
 			$f['editedby'] = $_SESSION['mgrInternalKey'];
 		}
 		
@@ -101,18 +91,16 @@ class DocAPI {
 		$f = $this->correctResourceFields($f);
 		$f = $modx->db->escape($f);
 		$rs = $modx->db->update($f, '[+prefix+]site_content', $where);
-		if($rs!==false) $modx->clearCache();
+		if ($rs !== false) $modx->clearCache();
 		return $rs;
 	}
 
-	function delete($id = 0, $where = '')
-	{
+	function delete($id = 0, $where = '') {
 		global $modx;
 		
-		if(!preg_match('@^[0-9]+$@', $id)) return;
-		if(empty($id))
-		{
-			if(isset($modx->documentIdentifier)) $id = $modx->documentIdentifier;
+		if (!preg_match('@^[0-9]+$@', $id)) return;
+		if (empty($id)) {
+			if (isset($modx->documentIdentifier)) $id = $modx->documentIdentifier;
 			else return;
 		}
 		
@@ -125,42 +113,36 @@ class DocAPI {
 		$modx->db->update($f, '[+prefix+]site_content', "id='{$id}'");
 	}
 	
-	function setPubStatus($f)
-	{
+	function setPubStatus($f) {
 		global $modx;
 
 		$currentdate = time();
 		
-        if(!isset($f['pub_date']) || empty($f['pub_date'])) $f['pub_date'] = 0;
-        else
-        {
+        if (!isset($f['pub_date']) || empty($f['pub_date'])) $f['pub_date'] = 0;
+        else {
         	$f['pub_date'] = $modx->toTimeStamp($f['pub_date']);
-        	if($f['pub_date'] < $currentdate) $f['published'] = 1;
-        	elseif($f['pub_date'] > $currentdate) $f['published'] = 0;
+        	if ($f['pub_date'] < $currentdate) $f['published'] = 1;
+        	elseif ($f['pub_date'] > $currentdate) $f['published'] = 0;
         }
         
-        if(empty($f['unpub_date'])) $f['unpub_date'] = 0;
-        else
-        {
+        if (empty($f['unpub_date'])) $f['unpub_date'] = 0;
+        else {
         	$f['unpub_date'] = $modx->toTimeStamp($f['unpub_date']);
         	if($f['unpub_date'] < $currentdate) $f['published'] = 0;
         }
         return $f;
 	}
 	
-	function correctResourceFields($f)
-	{
+	function correctResourceFields($f) {
 		$fnames = $this->getResourceNames();
 		$rfields = array();
-		foreach($f as $k=>$v)
-		{
-			if(isset($fnames[$k])) $rfields[$k] = $v;
+		foreach ($f as $k => $v) {
+			if (isset($fnames[$k])) $rfields[$k] = $v;
 		}
 		return $rfields;
 	}
 
-	function getResourceNames()
-	{
+	function getResourceNames() {
 		$fname = array();
 		
         $fname['content']     = '1';
@@ -210,46 +192,38 @@ class DocAPI {
         
 		return $fname;
 	}
-	function replaceTVs(&$inputFields=array(), $id)
-	{
+	
+	function replaceTVs(&$inputFields = array(), $id) {
 	    global $modx;
 		$rs = $modx->db->select('id,name', '[+prefix+]site_tmplvars');
-		while($row = $modx->db->getRow($rs))
-		{
+		while ($row = $modx->db->getRow($rs)) {
 			$tvname = $row['name'];
 			$tvid   = $row['id'];
 			$alltmplvarids[$tvname]    = $tvid;
 			$alltmplvarids['tv'.$tvid] = $tvid;
 		}
-		foreach($inputFields as $name=>$v)
-		{
-			if(array_key_exists($name, $alltmplvarids))
-			{
+		foreach ($inputFields as $name => $v) {
+			if (array_key_exists($name, $alltmplvarids)) {
 				$tmplvarids[$name] = $alltmplvarids[$name];
 			}
 		}
 		
 		$result = false;
-		if(isset($tmplvarids) && !empty($tmplvarids))
-		{
-		    foreach($tmplvarids as $tmplvarname=>$tmplvarid)
-		    {
+		if (isset($tmplvarids) && !empty($tmplvarids)) {
+		    foreach ($tmplvarids as $tmplvarname => $tmplvarid) {
         		$template = $inputFields['template'];
         		$rs = $modx->db->select('*','[+prefix+]site_tmplvar_templates', "tmplvarid='{$tmplvarid}' AND templateid='{$template}'");
-        		if($modx->db->getRecordCount($rs)==1)
-        		{
+        		if ($modx->db->getRecordCount($rs) == 1) {
         		    $value = $modx->db->escape($inputFields[$tmplvarname]);
         		    $key = false;
-            		$rs = $modx->db->select('*','[+prefix+]site_tmplvar_contentvalues', "tmplvarid='{$tmplvarid}' AND contentid='{$id}'");
-            		if($modx->db->getRecordCount($rs)==0)
-            		{
-            		    $key = $modx->db->insert(array('value'=>$value,'tmplvarid'=>$tmplvarid,'contentid'=>$id), '[+prefix+]site_tmplvar_contentvalues');
+            		$rs = $modx->db->select('*', '[+prefix+]site_tmplvar_contentvalues', "tmplvarid='{$tmplvarid}' AND contentid='{$id}'");
+            		if ($modx->db->getRecordCount($rs) == 0) {
+            		    $key = $modx->db->insert(array('value' => $value, 'tmplvarid' => $tmplvarid, 'contentid' => $id), '[+prefix+]site_tmplvar_contentvalues');
             		}
-            		else
-            		{
+            		else {
             		    $key = $modx->db->update(array('value'=>$value), '[+prefix+]site_tmplvar_contentvalues', "tmplvarid='{$tmplvarid}' AND contentid='{$id}'");
             		}
-                    if($key) unset($inputFields[$tmplvarname]);
+                    if ($key) unset($inputFields[$tmplvarname]);
         		}
 		    }
 		}
@@ -257,17 +231,16 @@ class DocAPI {
 		return $result;
 	}
 	
-	function initValue($form_v)
-	{
+	function initValue($form_v) {
 		global $modx;
 		
 		$fields = 'id,ta,alias,type,contentType,pagetitle,longtitle,description,link_attributes,isfolder,published,pub_date,unpub_date,parent,template,menuindex,searchable,cacheable,editedby,editedon,publishedon,publishedby,richtext,content_dispo,donthit,menutitle,hidemenu,introtext';
-		$fields = explode(',',$fields);
-		if(isset($form_v['ta'])) $form_v['content'] = $form_v['ta'];
-		foreach($fields as $key) {
-			if(!isset($form_v[$key])) $form_v[$key] = '';
+		$fields = explode(',', $fields);
+		if (isset($form_v['ta'])) $form_v['content'] = $form_v['ta'];
+		foreach ($fields as $key) {
+			if (!isset($form_v[$key])) $form_v[$key] = '';
 			$value = trim($form_v[$key]);
-			switch($key) {
+			switch ($key) {
 				case 'id': // auto_increment
 				case 'parent':
 				case 'template':
@@ -275,7 +248,7 @@ class DocAPI {
 				case 'publishedon':
 				case 'publishedby':
 				case 'content_dispo':
-					if(!preg_match('@^[0-9]+$@',$value))
+					if (!preg_match('@^[0-9]+$@', $value))
 						$value = 0;
 					break;
 				case 'published':
@@ -283,30 +256,30 @@ class DocAPI {
 				case 'donthit':
 				case 'hidemenu':
 				case 'richtext':
-					if(!preg_match('@^[01]$@',$value))
+					if (!preg_match('@^[01]$@', $value))
 						$value = 0;
 					break;
 				case 'searchable':
 				case 'cacheable':
-					if(!preg_match('@^[01]$@',$value))
+					if (!preg_match('@^[01]$@', $value))
 						$value = 1;
 					break;
 				case 'pub_date':
 				case 'unpub_date':
-					if($value==='') $value = 0;
+					if ($value === '') $value = 0;
 					else $value = $modx->toTimeStamp($value);
 					break;
 				case 'editedon':
 					$value = $_SERVER['REQUEST_TIME'];
 					break;
 				case 'editedby':
-					if(empty($value)) $value = $modx->getLoginUserID('mgr');
+					if (empty($value)) $value = $modx->getLoginUserID('mgr');
 					break;
 				case 'type':
-					if($value==='') $value = 'document';
+					if ($value === '') $value = 'document';
 					break;
 				case 'contentType':
-					if($value==='') $value = 'text/html';
+					if ($value === '') $value = 'text/html';
 					break;
 				case 'longtitle':
 				case 'description':
@@ -334,66 +307,62 @@ class DocAPI {
 			$form_v['richtext'] = 0;
 		
 		$pos = strrpos($form_v['alias'],'.');
-		if($pos!==false && $form_v['contentType'] === 'text/html')
-		{
-			$ext = substr($form_v['alias'],$pos);
-			if    ($ext==='.xml') $form_v['contentType'] = 'text/xml';
-			elseif($ext==='.rss') $form_v['contentType'] = 'application/rss+xml';
-			elseif($ext==='.css') $form_v['contentType'] = 'text/css';
-			elseif($ext==='.js')  $form_v['contentType'] = 'text/javascript';
-			elseif($ext==='.txt') $form_v['contentType'] = 'text/plain';
+		if ($pos!==false && $form_v['contentType'] === 'text/html') {
+			$ext = substr($form_v['alias'], $pos);
+			if     ($ext === '.xml') $form_v['contentType'] = 'text/xml';
+			elseif ($ext === '.rss') $form_v['contentType'] = 'application/rss+xml';
+			elseif ($ext === '.css') $form_v['contentType'] = 'text/css';
+			elseif ($ext === '.js')  $form_v['contentType'] = 'text/javascript';
+			elseif ($ext === '.txt') $form_v['contentType'] = 'text/plain';
 		}
 		
-		if($form_v['type']==='reference') {
-			if(strpos($form_v['content'],"\n")!==false||strpos($form_v['content'],'<')!==false)
+		if ($form_v['type'] === 'reference') {
+			if (strpos($form_v['content'], "\n") !== false || strpos($form_v['content'], '<') !== false)
 				$form_v['content'] = '';
 		}
 		
-		if($form_v['pagetitle']==='') {
+		if ($form_v['pagetitle'] === '') {
 			if ($form_v['type'] === 'reference')
 				$form_v['pagetitle'] = $_lang['untitled_weblink'];
 			else
 				$form_v['pagetitle'] = $_lang['untitled_resource'];
 		}
 		
-		if(substr($form_v['alias'],-1)==='/') {
-			$form_v['alias'] = trim($form_v['alias'],'/');
+		if (substr($form_v['alias'], -1) === '/') {
+			$form_v['alias'] = trim($form_v['alias'], '/');
 			$form_v['isfolder'] = 1;
 			$form_v['alias'] = $modx->stripAlias($form_v['alias']);
 		}
 		
-		if(!empty($form_v['pub_date'])) {
+		if (!empty($form_v['pub_date'])) {
 			$form_v['pub_date'] = $modx->toTimeStamp($form_v['pub_date']);
-			if(empty($form_v['pub_date']))
-			{
+			if (empty($form_v['pub_date'])) {
 				$modx->manager->saveFormValues($mode);
 				$url = "index.php?a={$mode}";
-				if($id) $url.= "&id={$id}";
-				$modx->webAlertAndQuit($_lang['mgrlog_dateinvalid'],$url);
+				if ($id) $url.= "&id={$id}";
+				$modx->webAlertAndQuit($_lang['mgrlog_dateinvalid'], $url);
 			}
-			elseif($form_v['pub_date'] < $_SERVER['REQUEST_TIME']) $form_v['published'] = 1;
-			elseif($form_v['pub_date'] > $_SERVER['REQUEST_TIME']) $form_v['published'] = 0;
+			elseif ($form_v['pub_date'] < $_SERVER['REQUEST_TIME']) $form_v['published'] = 1;
+			elseif ($form_v['pub_date'] > $_SERVER['REQUEST_TIME']) $form_v['published'] = 0;
 		}
 		
-		if(!empty($form_v['unpub_date'])) {
+		if (!empty($form_v['unpub_date'])) {
 			$form_v['unpub_date'] = $modx->toTimeStamp($form_v['unpub_date']);
-			if(empty($form_v['unpub_date']))
-			{
+			if (empty($form_v['unpub_date'])) {
 				$modx->manager->saveFormValues($mode);
 				$url = "index.php?a={$mode}";
-				if($id) $url.= "&id={$id}";
-				$modx->webAlertAndQuit($_lang['mgrlog_dateinvalid'],$url);
+				if ($id) $url.= "&id={$id}";
+				$modx->webAlertAndQuit($_lang['mgrlog_dateinvalid'], $url);
 			}
-			elseif($form_v['unpub_date'] < $_SERVER['REQUEST_TIME']) $form_v['published'] = 0;
+			elseif ($form_v['unpub_date'] < $_SERVER['REQUEST_TIME']) $form_v['published'] = 0;
 		}
 		
-		if($_POST['mode'] == '27') $actionToTake = 'edit';
-		else                       $actionToTake = 'new';
+		if ($_POST['mode'] == '27') $actionToTake = 'edit';
+		else                        $actionToTake = 'new';
 	
 		// deny publishing if not permitted
-		if ($actionToTake==='new') {
-			if (!$modx->hasPermission('publish_document'))
-			{
+		if ($actionToTake === 'new') {
+			if (!$modx->hasPermission('publish_document')) {
 				$form_v['pub_date'] = 0;
 				$form_v['unpub_date'] = 0;
 				$form_v['published'] = 0;
@@ -403,16 +372,16 @@ class DocAPI {
 			
 			$form_v['createdby'] = $modx->getLoginUserID();
 			$form_v['createdon'] = $_SERVER['REQUEST_TIME'];
-		} else {
+		}
+		else {
 		}
 		return $form_v;
 	}
 	
-	function getNewDocID()
-	{
+	function getNewDocID() {
 		global $modx;
 		
-		switch($modx->config['docid_incrmnt_method']) {
+		switch ($modx->config['docid_incrmnt_method']) {
 			case '1':
 				$from = '[+prefix+]site_content AS T0 LEFT JOIN [+prefix+]site_content AS T1 ON T0.id + 1 = T1.id';
 				$where = "T1.id IS NULL";
@@ -420,7 +389,7 @@ class DocAPI {
 				$newid = $modx->db->getValue($rs);
 				break;
 			case '2':
-				$rs = $modx->db->select('MAX(id)+1','[+prefix+]site_content');
+				$rs = $modx->db->select('MAX(id)+1', '[+prefix+]site_content');
 				$newid = $modx->db->getValue($rs);
 				break;
 			default:
@@ -429,106 +398,92 @@ class DocAPI {
 		return $newid;
 	}
 	
-    function fixPubStatus($f) // published, pub_date, unpub_date
-    {
+    function fixPubStatus($f) { // published, pub_date, unpub_date
     	global $modx;
     
     	$currentdate = time();
     	
-        if(isset($f['pub_date']) && !empty($f['pub_date']))
-        {
+        if (isset($f['pub_date']) && !empty($f['pub_date'])) {
         	$f['pub_date'] = $modx->toTimeStamp($f['pub_date']);
         	
-        	if($f['pub_date'] < $currentdate) $f['published'] = 1;
-        	else                              $f['published'] = 0;
+        	if ($f['pub_date'] < $currentdate) $f['published'] = 1;
+        	else                               $f['published'] = 0;
         }
         else $f['pub_date'] = 0;
         
-        if(isset($f['unpub_date']) && !empty($f['unpub_date']))
-        {
+        if (isset($f['unpub_date']) && !empty($f['unpub_date'])) {
         	$f['unpub_date'] = $modx->toTimeStamp($f['unpub_date']);
         	
-        	if($f['unpub_date'] < $currentdate) $f['published'] = 0;
-        	else                                $f['published'] = 1;
+        	if ($f['unpub_date'] < $currentdate) $f['published'] = 0;
+        	else                                 $f['published'] = 1;
         }
         else $f['unpub_date'] = 0;
         
         return $f;
     }
     
-	function fixTvNest($target,$form_v)
-	{
-		foreach(explode(',',$target) as $name)
-		{
+	function fixTvNest($target,$form_v) {
+		foreach (explode(',', $target) as $name) {
 			$tv = ($name === 'ta') ? 'content' : $name;
 			$s = "[*{$tv}*]";
 			$r = "[ *{$tv}* ]";
-			if(strpos($form_v[$name],$s)===false) continue;
-			$form_v[$name] = str_replace($s,$r,$form_v[$name]);
+			if (strpos($form_v[$name], $s) === false) continue;
+			$form_v[$name] = str_replace($s, $r, $form_v[$name]);
 		}
-        if(isset($form_v['ta']))
-        {
+        if (isset($form_v['ta'])) {
         	$form_v['content'] = $form_v['ta'];
         	unset($form_v['ta']);
         }
 		return $form_v;
 	}
 	
-    function canSaveDoc()
-    {
+    function canSaveDoc() {
     	global $modx;
     	
     	return $modx->hasPermission('save_document');
     }
     
-    function canPublishDoc()
-    {
+    function canPublishDoc() {
     	global $modx;
-    	if($modx->hasPermission('new_document')) return 1;
-    	elseif(!$modx->documentObject['published']) return 1;
+    	if ($modx->hasPermission('new_document')) return 1;
+    	elseif (!$modx->documentObject['published']) return 1;
     	else return 0;
     }
     
-    function canSaveDraft()
-    {
+    function canSaveDraft() {
     	global $modx;
     	return 1;
     }
     
-    function canMoveDoc()
-    {
+    function canMoveDoc() {
     	global $modx;
     	return $modx->hasPermission('save_document');
     }
     
-    function canCopyDoc()
-    {
+    function canCopyDoc() {
     	global $modx;
     	return ($modx->hasPermission('new_document')&&$modx->hasPermission('save_document'));
     }
     
-    function canDeleteDoc()
-    {
+    function canDeleteDoc() {
     	global $modx;
     	return ($modx->hasPermission('save_document')&&$modx->hasPermission('delete_document'));
     }
     
-    function canCreateDoc()
-    {
+    function canCreateDoc() {
     	global $modx;
     	return $modx->hasPermission('new_document');
     }
     
-    function canEditDoc()
-    {
+    function canEditDoc() {
     	global $modx;
     	return $modx->hasPermission('edit_document');
     }
     
     function existsDoc($id = 0) {
         global $modx;
-        $rs = $modx->db->select('id','[+prefix+]site_content', "id='{$id}'");
-        if($modx->db->getRecordCount($rs)==0) {
+        $rs = $modx->db->select('id', '[+prefix+]site_content', "id='{$id}'");
+        if ($modx->db->getRecordCount($rs) == 0) {
             return false;
         }
         else {
@@ -536,4 +491,3 @@ class DocAPI {
         }
     }
 }
-
