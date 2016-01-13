@@ -162,7 +162,9 @@ pip-log.txt
 .DS_Store
 
 
-#MODX-JP
+#############
+## PMODX-JP
+#############
 .htaccess
 assets/cache
 content
