@@ -95,7 +95,7 @@ class DocumentParser {
             $this->setdocumentMap();
         elseif ($property_name === 'documentListing')
             return $this->makeDocumentListing();
-        elseif(isset($this->config[$property_name]))
+        elseif (isset($this->config[$property_name]))
             return $this->config[$property_name];
         else
             $this->logEvent(0, 1, "\$modx-&gt;{$property_name} is undefined property", 'Call undefined property');
@@ -170,11 +170,11 @@ class DocumentParser {
         }
         
         $this->loadExtension('DeprecatedAPI');
-        if (method_exists($this->old,$method_name)) $error_type=1;
-        else                                        $error_type=3;
+        if (method_exists($this->old, $method_name)) $error_type=1;
+        else                                         $error_type=3;
         
         if (!isset($this->config['error_reporting']) || 1 < $this->config['error_reporting']) {
-            if($error_type==1) {
+            if ($error_type == 1) {
                 $title = 'Call deprecated method';
                 $msg = htmlspecialchars("\$modx->{$method_name}() is deprecated function");
             }
@@ -184,14 +184,14 @@ class DocumentParser {
             }
             $info = debug_backtrace();
             $m[] = $msg;
-            if(!empty($this->currentSnippet))          $m[] = 'Snippet - ' . $this->currentSnippet;
-            elseif(!empty($this->event->activePlugin)) $m[] = 'Plugin - '  . $this->event->activePlugin;
+            if (!empty($this->currentSnippet))          $m[] = 'Snippet - ' . $this->currentSnippet;
+            elseif (!empty($this->event->activePlugin)) $m[] = 'Plugin - '  . $this->event->activePlugin;
             $m[] = $this->decoded_request_uri;
             $m[] = str_replace('\\', '/', $info[0]['file']) . '(line:' . $info[0]['line'] . ')';
             $msg = implode('<br />', $m);
             $this->logEvent(0, $error_type, $msg, $title);
         }
-        if(method_exists($this->old, $method_name))
+        if (method_exists($this->old, $method_name))
             return call_user_func_array(array($this->old, $method_name), $arguments);
     }
     // constructor
@@ -241,8 +241,7 @@ class DocumentParser {
      * @return bool or Object
      * 
      */
-    function loadExtension($extname)
-    {
+    function loadExtension($extname) {
         global $database_type;
         
         $low_extname = strtolower($extname);
@@ -307,7 +306,7 @@ class DocumentParser {
             if(0 < count($_POST)) $this->config['cache_type'] = 0;
             
             $this->documentOutput = $this->get_static_pages($this->decoded_request_uri);
-            if(!empty($this->documentOutput)) {
+            if (!empty($this->documentOutput)) {
                 $this->documentOutput = $this->parseDocumentSource($this->documentOutput);
                 $this->invokeEvent('OnWebPagePrerender');
                 echo $this->documentOutput;
@@ -363,11 +362,11 @@ class DocumentParser {
     }
     
     function setRequestQ($decoded_request_uri) {
-        if(isset($_REQUEST['id'])) $q = null;
+        if (isset($_REQUEST['id'])) $q = null;
         else {
             $q = substr($decoded_request_uri, strlen($this->config['base_url']));
-            if(strpos($q, '?') !== false) $q = substr($q, 0, strpos($q, '?'));
-            if($q == 'index.php')         $q = '';
+            if (strpos($q, '?') !== false) $q = substr($q, 0, strpos($q, '?'));
+            if ($q == 'index.php')         $q = '';
         }
         // IIS friendly url fix
         if (strpos($_SERVER['SERVER_SOFTWARE'], 'Microsoft-IIS') !== false)
@@ -380,12 +379,12 @@ class DocumentParser {
         if (isset($_SERVER['QUERY_STRING']) && strpos(urldecode($_SERVER['QUERY_STRING']), chr(0)) !== false)
             exit();
         
-        foreach (array ('PHP_SELF', 'HTTP_USER_AGENT', 'HTTP_REFERER', 'QUERY_STRING') as $key) {
+        foreach (array('PHP_SELF', 'HTTP_USER_AGENT', 'HTTP_REFERER', 'QUERY_STRING') as $key) {
             $_SERVER[$key] = isset ($_SERVER[$key]) ? htmlspecialchars($_SERVER[$key], ENT_QUOTES) : null;
         }
         $this->sanitize_gpc($_GET);
         if ($this->isBackend()) {
-            if(session_id() === '' || $_SESSION['mgrPermissions']['save_document']!=1) $this->sanitize_gpc($_POST);
+            if(session_id() === '' || $_SESSION['mgrPermissions']['save_document'] != 1) $this->sanitize_gpc($_POST);
         }
         $this->sanitize_gpc($_COOKIE);
         $this->sanitize_gpc($_REQUEST);
@@ -399,7 +398,7 @@ class DocumentParser {
     }
     
     function genQsHash() {
-        if ($this->directParse==0 && !empty($_SERVER['QUERY_STRING'])) {
+        if ($this->directParse == 0 && !empty($_SERVER['QUERY_STRING'])) {
             $qs = $_GET;
             if (isset($qs['id'])) unset($qs['id']);
             if (0 < count($qs)) $qs_hash = '_' . md5(join('&', $qs));
@@ -494,23 +493,22 @@ class DocumentParser {
                                     $template->content = str_replace('[*#content*]', $template->content, $parent->content);
                                 elseif(strpos($parent->content, '[*content:') !== false) {
                                     $matches = $this->getTagsFromContent($parent->content, '[*content:','*]');
-                                    if($matches[0])
-                                    {
+                                    if($matches[0]) {
                                         $modifier = $matches[1][0];
                                         $template->content = str_replace($matches[0][0], $template->content, $parent->content);
                                         $template->content = str_replace('[*content*]', "[*content:{$modifier}*]", $template->content);
                                     }
                                 }
-                                if(!empty($parent->parent)) $parent = $this->db->getObject('site_templates', "id='{$parent->parent}'");
+                                if (!empty($parent->parent)) $parent = $this->db->getObject('site_templates', "id='{$parent->parent}'");
                                 else break;
                             }
                             else break;
                         }
                     }
                     
-                    if(substr($template->content, 0, 5) === '@FILE')
+                    if (substr($template->content, 0, 5) === '@FILE')
                         $template->content = $this->atBindFile($template->content);
-                    elseif(substr($template->content, 0, 4) === '@URL')
+                    elseif (substr($template->content, 0, 4) === '@URL')
                         $template->content = $this->atBindUrl($template->content);
                     
                     $this->documentContent = $template->content;
@@ -526,10 +524,7 @@ class DocumentParser {
             $this->documentContent = $this->parseDocumentSource($this->documentContent);
         }
         if ($this->directParse == 0) {
-            register_shutdown_function(array (
-            & $this,
-            'postProcess'
-            )); // tell PHP to call postProcess when it shuts down
+            register_shutdown_function(array(&$this, 'postProcess')); // tell PHP to call postProcess when it shuts down
         }
         $result = $this->outputContent();
         return $result;
@@ -539,9 +534,9 @@ class DocumentParser {
         
         $this->documentOutput= $this->documentContent;
         
-        if ($this->documentGenerated           == 1
+        if ($this->documentGenerated == 1
                 && $this->documentObject['cacheable'] == 1
-                && $this->documentObject['type']      == 'document'
+                && $this->documentObject['type'] == 'document'
                 && $this->documentObject['published'] == 1) {
             if (!empty($this->sjscripts)) $this->documentObject['__MODxSJScripts__'] = $this->sjscripts;
             if (!empty($this->jscripts))  $this->documentObject['__MODxJScripts__'] = $this->jscripts;
@@ -560,9 +555,9 @@ class DocumentParser {
                 $this->documentOutput = str_replace(array('[!', '!]'), array('[[', ']]'), $this->documentOutput);
                 $this->documentOutput = $this->parseDocumentSource($this->documentOutput);
                 
-                if($i == ($passes -1) && $i < ($this->maxParserPasses - 1)) {
+                if ($i == ($passes -1) && $i < ($this->maxParserPasses - 1)) {
                     $et = md5($this->documentOutput);
-                    if($st != $et) $passes++;
+                    if ($st != $et) $passes++;
                 }
             }
         }
@@ -580,7 +575,7 @@ class DocumentParser {
         
         // remove all unused placeholders
         if (strpos($this->documentOutput, '[+') !== false) {
-            $matches= array ();
+            $matches = array ();
             $matches = $this->getTagsFromContent($this->documentOutput, '[+', '+]');
             if ($matches[0])
                 $this->documentOutput= str_replace($matches[0], '', $this->documentOutput);
@@ -648,15 +643,15 @@ class DocumentParser {
     function postProcess()
     {
         // if the current document was generated, cache it!
-        if ($this->documentGenerated           == 1
+        if ($this->documentGenerated == 1
                 && $this->documentObject['cacheable'] == 1
-                && $this->documentObject['type']      == 'document'
+                && $this->documentObject['type'] == 'document'
                 && $this->documentObject['published'] == 1) {
             $docid = $this->documentIdentifier;
             $param = array('makeCache' => true);
             // invoke OnBeforeSaveWebPageCache event
             $this->invokeEvent('OnBeforeSaveWebPageCache', $param);
-            if ( $param['makeCache'] != true ) return;
+            if ($param['makeCache'] != true) return;
 
             // get and store document groups inside document object. Document groups will be used to check security on cache pages
             $dsq = $this->db->select('document_group', '[+prefix+]document_groups', "document='{$docid}'");
@@ -715,8 +710,8 @@ class DocumentParser {
         // end post processing
     }
     
-    function sanitize_gpc(& $target, $count = 0) {
-        if(empty($target)) return;
+    function sanitize_gpc( &$target, $count = 0) {
+        if (empty($target)) return;
         $_ = join('', $target);
         if (strpos($_, '[') === false && strpos($_, '<') === false && strpos($_, '#') === false) return;
         
@@ -766,7 +761,7 @@ class DocumentParser {
     }
     
     function join($delim = ',', $array, $prefix = '') {
-        foreach($array as $i => $v) {
+        foreach ($array as $i => $v) {
             $array[$i] = $prefix . trim($v);
         }
         $str = join($delim, $array);
@@ -780,13 +775,13 @@ class DocumentParser {
     }
     
     function get_static_pages($filepath) {
-        if(strpos($filepath, '?') !== false) $filepath = substr($filepath, 0, strpos($filepath, '?'));
+        if (strpos($filepath, '?') !== false) $filepath = substr($filepath, 0, strpos($filepath, '?'));
         $filepath = substr($filepath, strlen($this->config['base_url']));
-        if(substr($filepath, -1) === '/' || empty($filepath)) $filepath .= 'index.html';
+        if (substr($filepath, -1) === '/' || empty($filepath)) $filepath .= 'index.html';
         $filepath = $this->config['base_path'] . "temp/public_html/{$filepath}";
-        if(is_file($filepath) === false) return false;
+        if (is_file($filepath) === false) return false;
         $ext = strtolower(substr($filepath, strrpos($filepath, '.')));
-        switch($ext) {
+        switch ($ext) {
             case '.html': case '.htm':
                 $mime_type = 'text/html'; break;
             case '.xml':
@@ -799,9 +794,9 @@ class DocumentParser {
             case '.txt':
                 $mime_type = 'text/plain'; break;
             case '.ico': case '.jpg': case '.jpeg': case '.png': case '.gif':
-                if($ext==='.ico') $mime_type = 'image/x-icon';
+                if ($ext==='.ico') $mime_type = 'image/x-icon';
                 else              $mime_type = $this->getMimeType($filepath);
-                if(!$mime_type) $this->sendErrorPage();
+                if (!$mime_type) $this->sendErrorPage();
                 header("Content-type: {$mime_type}");
                 //readfile($filepath);
                 $src = file_get_contents($filepath);
@@ -938,9 +933,9 @@ class DocumentParser {
     
     // check if site is offline
     function checkSiteStatus() {
-        if($this->config['site_status'] == 1) return true; // site online
+        if ($this->config['site_status'] == 1) return true; // site online
         elseif ($this->checkSession())         return true; // site offline but launched via the manager
-        else                                  return false; // site is offline
+        else                                   return false; // site is offline
     }
     
     function cleanDocumentIdentifier($qOrig) {
@@ -955,7 +950,7 @@ class DocumentParser {
             return $this->aliasCache[__FUNCTION__]['alias'][$qOrig];
         }
         
-        if(empty($qOrig)) $qOrig = $this->config['site_start'];
+        if (empty($qOrig)) $qOrig = $this->config['site_start'];
         $q = trim($qOrig, '/');
         /* Save path if any */
         /* FS#476 and FS#308: only return virtualDir if friendly paths are enabled */
@@ -1105,7 +1100,7 @@ class DocumentParser {
     function updatePublishStatus() {
         $cache_path= "{$this->config['base_path']}assets/cache/basicConfig.php";
         if ($this->cacheRefreshTime == '') {
-            if(is_file($cache_path)) {
+            if (is_file($cache_path)) {
                 global $cacheRefreshTime;
                 include_once($cache_path);
                 $this->cacheRefreshTime = $cacheRefreshTime;
@@ -2301,7 +2296,7 @@ class DocumentParser {
         if ($docgrp = $this->getUserDocGroups()) {
             $docgrp = implode(',', $docgrp);
         }
-        if($this->isFrontend()) $context = "sc.privateweb='0'";
+        if ($this->isFrontend()) $context = "sc.privateweb='0'";
         else                    $context = "1='{$_SESSION['mgrRole']}' OR sc.privatemgr='0'";
         $cond =  ($docgrp) ? "OR dg.document_group IN ({$docgrp})" : '';
         
@@ -2421,7 +2416,7 @@ class DocumentParser {
 
         $site_url = $this->config['site_url'];
         $base_url = $this->config['base_url'];
-        switch($scheme) {
+        switch ($scheme) {
             case 'full':
             case 'f':
                 $site_url = $this->config['site_url'];
@@ -2764,7 +2759,7 @@ class DocumentParser {
     			else
     				$resource = $this->getDocument($docid, '*', $published);
     			if (!$resource) return false;
-    		};
+    		}
 
             $template = $resource['template'];
             if ($docid == $this->documentIdentifier && !empty($this->previewObject['template']) ) //Load preview
