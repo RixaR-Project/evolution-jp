@@ -1793,6 +1793,7 @@ class DocumentParser {
                 break;
             }
         }
+        // スニペットコールのパラメータを配列にも対応
         foreach ($temp_params as $p) {
             $k = key($p);
             if (substr($k, -2) === '[]') {

@@ -1,5 +1,4 @@
 <?php
-
 $this->filter= new MODIFIERS;
 
 class MODIFIERS {
@@ -469,7 +468,7 @@ class MODIFIERS {
                 return number_format($value, $opt);
             case 'money_format':
                 setlocale(LC_MONETARY, setlocale(LC_TIME, 0));
-                if ($value !== '') return money_format($opt, $value);
+                if ($value !== '') return money_format($opt, (double)$value);
                 break;
             case 'tobool':
                 return boolval($value);
@@ -646,6 +645,7 @@ class MODIFIERS {
                 switch ($opt) {
                     case 'width' : return $info['width'];
                     case 'height': return $info['height'];
+                    case 'aspect': return $info['aspect'];
                     case 'type'  : return $info['type'];
                     case 'attrib': return $info['attrib'];
                     default      : return print_r($info,true);
@@ -802,131 +802,119 @@ class MODIFIERS {
                     $modifiers_path = MODX_CORE_PATH . "extenders/modifiers/mdf_{$cmd}.inc";
                 else $modifiers_path = false;
                 
-                if($modifiers_path) {
+                if ($modifiers_path) {
                     $php = @file_get_contents($modifiers_path);
                     $php = trim($php);
-                    if(substr($php,0,5)==='<?php') $php = substr($php,6);
-                    if(substr($php,0,2)==='<?')    $php = substr($php,3);
-                    if(substr($php,-2)==='?>')     $php = substr($php,0,-2);
-                    if($this->elmName!=='')
+                    if (substr($php, 0, 5) === '<?php') $php = substr($php, 6);
+                    if (substr($php, 0, 2) === '<?')    $php = substr($php, 3);
+                    if (substr($php, -2) === '?>')      $php = substr($php, 0, -2);
+                    if ($this->elmName !== '')
                         $modx->snippetCache[$this->elmName.'Props'] = '';
                 }
                 else
                     $php = false;
             }
             else $php = false;
-            if($this->elmName!=='') $modx->snippetCache[$this->elmName]= $php;
+            if ($this->elmName !== '') $modx->snippetCache[$this->elmName] = $php;
         }
-        if($php==='') $php=false;
+        if ($php === '') $php = false;
         
-        if($php===false) $html = $modx->getChunk($this->elmName);
-        else             $html = false;
+        if ($php === false) $html = $modx->getChunk($this->elmName);
+        else                $html = false;
 
         $self = '[+output+]';
         
-        if($php !== false)
-        {
+        if ($php !== false) {
             ob_start();
-            $options = $opt;
-            $output = $value;
-            $name   = $phxkey;
+            $options  = $opt;
+            $output   = $value;
+            $name     = $phxkey;
             $this->bt = $value;
-            $this->vars['value']   = & $value;
-            $this->vars['input']   = & $value;
-            $this->vars['option']  = & $opt;
-            $this->vars['options'] = & $opt;
+            $this->vars['value']   = &$value;
+            $this->vars['input']   = &$value;
+            $this->vars['option']  = &$opt;
+            $this->vars['options'] = &$opt;
             $custom = eval($php);
             $msg = ob_get_contents();
-            if($value===$this->bt) $value = $msg . $custom;
+            if ($value === $this->bt) $value = $msg . $custom;
             ob_end_clean();
         }
-        elseif($html!==false && isset($value) && $value!=='')
-        {
-            $html = str_replace(array($self,'[+value+]'), $value, $html);
-            $value = str_replace(array('[+options+]','[+param+]'), $opt, $html);
+        elseif ($html !== false && isset($value) && $value !== '') {
+            $html = str_replace(array($self, '[+value+]'), $value, $html);
+            $value = str_replace(array('[+options+]', '[+param+]'), $opt, $html);
         }
-        if($php===false && $html===false && $value!==''
-           && (strpos($cmd,'[+value+]')!==false || strpos($cmd,$self)!==false))
-        {
-            $value = str_replace(array('[+value+]',$self),$value,$cmd);
+        if ($php === false && $html === false && $value !== ''
+                && (strpos($cmd, '[+value+]') !== false || strpos($cmd, $self) !== false)) {
+            $value = str_replace(array('[+value+]', $self), $value, $cmd);
         }
         return $value;
     }
-    function _delimRoop($_tmp,$delim)
-    {
+    function _delimRoop($_tmp, $delim) {
         $debugbt = $_tmp;
-        $_tmp = $this->substr($_tmp,1);
+        $_tmp = $this->substr($_tmp, 1);
         $value = '';
         $c = 0;
-        while($c < 65000)
-        {
+        while ($c < 65000) {
             $bt = $_tmp;
-            $char = $this->substr($_tmp,0,1);
-            $_tmp = $this->substr($_tmp,1);
+            $char = $this->substr($_tmp, 0, 1);
+            $_tmp = $this->substr($_tmp, 1);
             $c++;
-            if($c===65000)
-            {
+            if ($c === 65000) {
                 global $modx;
-                $modx->addLog('modifiers _delimRoop debug',$debugbt);
+                $modx->addLog('modifiers _delimRoop debug', $debugbt);
                 exit('Modifiers parse over');
             }
-            if($char===$delim && ($this->substr($_tmp,0,1)===':'))
+            if ($char === $delim && ($this->substr($_tmp, 0, 1) === ':'))
                 break;
             else
                 $value .= $char;
             
-            if($delim===$_tmp)    {$_tmp='';break;}
-            elseif($bt === $_tmp) break;
-            elseif($_tmp==='')    break;
+            if ($delim === $_tmp)    { $_tmp=''; break; }
+            elseif ($bt === $_tmp)   break;
+            elseif ($_tmp === '')    break;
         }
-        if($value===$delim) $value = '';
-        if(!empty($value))
+        if ($value === $delim) $value = '';
+        if (!empty($value))
             $value = $this->parseDocumentSource($value);
         
-        return array($value,$_tmp);
+        return array($value, $_tmp);
     }
     
-    function parseDocumentSource($content='')
-    {
+    function parseDocumentSource($content = '') {
         global $modx;
         
-        $c=0;
-        while($c < 20)
-        {
+        $c = 0;
+        while ($c < 20) {
             $bt = $content;
-            if(strpos($content,'[*')!==false && $modx->documentIdentifier)
-                                              $content = $modx->mergeDocumentContent($content);
-            if(strpos($content,'[(')!==false) $content = $modx->mergeSettingsContent($content);
-            if(strpos($content,'{{')!==false) $content = $modx->mergeChunkContent($content);
-            if(strpos($content,'[[')!==false) $content = $modx->evalSnippets($content);
-            if($content===$bt) break;
+            if (strpos($content, '[*') !== false && $modx->documentIdentifier)
+                                                  $content = $modx->mergeDocumentContent($content);
+            if (strpos($content, '[(') !== false) $content = $modx->mergeSettingsContent($content);
+            if (strpos($content, '{{') !== false) $content = $modx->mergeChunkContent($content);
+            if (strpos($content, '[[') !== false) $content = $modx->evalSnippets($content);
+            if ($content === $bt) break;
             $c++;
-            if($c===20) exit('Parse over');
+            if ($c === 20) exit('Parse over');
         }
         return $content;
     }
     
-    function getDocumentObject($target='',$field='pagetitle')
-    {
+    function getDocumentObject($target = '',$field = 'pagetitle') {
         global $modx;
         
         $target = trim($target);
-        if(empty($target)) $target = $modx->config['site_start'];
-        if(preg_match('@^[1-9][0-9]*$@',$target)) $method='id';
+        if (empty($target)) $target = $modx->config['site_start'];
+        if (preg_match('@^[1-9][0-9]*$@',$target)) $method='id';
         else $method = 'alias';
 
-        if(!isset($this->documentObject[$target]))
-        {
-            $this->documentObject[$target] = $modx->getDocumentObject($method,$target,'direct');
+        if (!isset($this->documentObject[$target])) {
+            $this->documentObject[$target] = $modx->getDocumentObject($method, $target, 'direct');
         }
         
-        if($this->documentObject[$target]['publishedon']==='0')
+        if ($this->documentObject[$target]['publishedon'] === '0')
             return '';
-        elseif(isset($this->documentObject[$target][$field]))
-        {
-            if(is_array($this->documentObject[$target][$field]))
-            {
-                $a = $modx->getTemplateVarOutput($field,$target);
+        elseif (isset($this->documentObject[$target][$field])) {
+            if (is_array($this->documentObject[$target][$field])) {
+                $a = $modx->getTemplateVarOutput($field, $target);
                 $this->documentObject[$target][$field] = $a[$field];
             }
         }
@@ -936,7 +924,7 @@ class MODIFIERS {
     }
     
     function setPlaceholders($value = '', $key = '', $path = '') {
-        if($path!=='') $key = "{$path}.{$key}";
+        if ($path !== '') $key = "{$path}.{$key}";
         if (is_array($value)) {
             foreach ($value as $subkey => $subval) {
                 $this->setPlaceholders($subval, $subkey, $key);
@@ -953,23 +941,22 @@ class MODIFIERS {
     //mbstring
     function substr($str, $s, $l = null) {
         global $modx;
-        if(is_null($l)) $l = $this->strlen($str);
-        if (function_exists('mb_substr'))
-        {
-            if(strpos($str,"\r")!==false)
-                $str = str_replace(array("\r\n","\r"), "\n", $str);
+        if (is_null($l)) $l = $this->strlen($str);
+        if (function_exists('mb_substr')) {
+            if (strpos($str, "\r") !== false)
+                $str = str_replace(array("\r\n", "\r"), "\n", $str);
             return mb_substr($str, $s, $l, $modx->config['modx_charset']);
         }
         return substr($str, $s, $l);
     }
-    function strpos($haystack,$needle,$offset=0) {
+    function strpos($haystack, $needle, $offset=0) {
         global $modx;
-        if (function_exists('mb_strpos')) return mb_strpos($haystack,$needle,$offset,$modx->config['modx_charset']);
-        return $this->strlen($haystack,$needle,$offset);
+        if (function_exists('mb_strpos')) return mb_strpos($haystack, $needle, $offset, $modx->config['modx_charset']);
+        return strpos($haystack, $needle, $offset);
     }
     function strlen($str) {
         global $modx;
-        if (function_exists('mb_strlen')) return mb_strlen(str_replace("\r\n", "\n", $str),$modx->config['modx_charset']);
+        if (function_exists('mb_strlen')) return mb_strlen(str_replace("\r\n", "\n", $str), $modx->config['modx_charset']);
         return strlen($str);
     }
     function strtolower($str) {
@@ -982,12 +969,12 @@ class MODIFIERS {
     }
     function ucfirst($str) {
         if (function_exists('mb_strtoupper')) 
-            return mb_strtoupper($this->substr($str, 0, 1)).$this->substr($str, 1, $this->strlen($str));
+            return mb_strtoupper($this->substr($str, 0, 1)) . $this->substr($str, 1, $this->strlen($str));
         return ucfirst($str);
     }
     function lcfirst($str) {
         if (function_exists('mb_strtolower')) 
-            return mb_strtolower($this->substr($str, 0, 1)).$this->substr($str, 1, $this->strlen($str));
+            return mb_strtolower($this->substr($str, 0, 1)) . $this->substr($str, 1, $this->strlen($str));
         return lcfirst($str);
     }
     function ucwords($str) {
@@ -1005,6 +992,6 @@ class MODIFIERS {
         return implode($ar[0]);
     }
     function str_word_count($str) {
-        return count(preg_split('~[^\p{L}\p{N}\']+~u',$str));
+        return count(preg_split('~[^\p{L}\p{N}\']+~u', $str));
     }
 }

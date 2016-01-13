@@ -1,5 +1,4 @@
 <?php
-
 $this->old = new OldFunctions();
 
 class OldFunctions {

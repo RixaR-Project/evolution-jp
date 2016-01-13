@@ -1,5 +1,4 @@
 <?php
-
 $this->doc= new DocAPI;
 
 class DocAPI {

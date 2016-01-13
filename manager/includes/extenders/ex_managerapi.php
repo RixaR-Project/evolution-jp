@@ -1,5 +1,4 @@
 <?php
-
 $this->manager = new ManagerAPI;
 
 /*
