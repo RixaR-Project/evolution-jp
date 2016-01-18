@@ -204,18 +204,18 @@ class DocumentParser {
         
         // events
         $this->event = new SystemEvent();
-        $this->Event = & $this->event; //alias for backward compatibility
-        $this->ph = & $this->placeholders;
+        $this->Event = &$this->event; //alias for backward compatibility
+        $this->ph = &$this->placeholders;
         
         $this->minParserPasses = 1; // min number of parser recursive loops or passes
         $this->maxParserPasses = 10; // max number of parser recursive loops or passes
-        $this->dumpSQL      = false;
-        $this->dumpSnippets = false; // feed the parser the execution start time
-        $this->snipLapCount = 0;
-        $this->stopOnNotice = false;
-        $this->safeMode     = false;
+        $this->dumpSQL         = false;
+        $this->dumpSnippets    = false; // feed the parser the execution start time
+        $this->snipLapCount    = 0;
+        $this->stopOnNotice    = false;
+        $this->safeMode        = false;
         // set track_errors ini variable
-        @ ini_set('track_errors', '1'); // enable error tracking in $php_errormsg
+        @ini_set('track_errors', '1'); // enable error tracking in $php_errormsg
         $this->error_reporting = 1;
         // Don't show PHP errors to the public
         if ($this->checkSession() === false && !defined('MODX_API_MODE')) @ini_set('display_errors', '0');
@@ -304,10 +304,12 @@ class DocumentParser {
         $_REQUEST['q'] = $this->setRequestQ($this->decoded_request_uri);
         
         if ($this->directParse == 0) {
-            if(0 < count($_POST)) $this->config['cache_type'] = 0;
+            if (0 < count($_POST)) $this->config['cache_type'] = 0;
             
+            // 実ファイルがあれば出力する
             $this->documentOutput = $this->get_static_pages($this->decoded_request_uri);
             if (!empty($this->documentOutput)) {
+                // 実ファイルもパースして、イベントを発動する
                 $this->documentOutput = $this->parseDocumentSource($this->documentOutput);
                 $this->invokeEvent('OnWebPagePrerender');
                 echo $this->documentOutput;
@@ -795,8 +797,8 @@ class DocumentParser {
             case '.txt':
                 $mime_type = 'text/plain'; break;
             case '.ico': case '.jpg': case '.jpeg': case '.png': case '.gif':
-                if ($ext==='.ico') $mime_type = 'image/x-icon';
-                else              $mime_type = $this->getMimeType($filepath);
+                if ($ext === '.ico') $mime_type = 'image/x-icon';
+                else                 $mime_type = $this->getMimeType($filepath);
                 if (!$mime_type) $this->sendErrorPage();
                 header("Content-type: {$mime_type}");
                 //readfile($filepath);
@@ -1115,7 +1117,7 @@ class DocumentParser {
         //下書き採用(今のところリソースのみ)
         $draft_ids = array();
         $rs = $this->db->select('element,elmid', '[+prefix+]site_revision', "pub_date<{$timeNow} AND status = 'standby'");
-        while ($row = $this->db->getRow($rs)){
+        while ($row = $this->db->getRow($rs)) {
             if ($row['element'] == 'resource') {
                 $draft_ids[] = $row['elmid'];
             }
