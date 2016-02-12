@@ -225,8 +225,7 @@ class DocumentParser {
         if($this->checkSession()===false && !defined('MODX_API_MODE')) @ini_set('display_errors','0');
         
         if(!isset($this->tstart)) {
-            $mtime = explode(' ',$_SERVER['REQUEST_TIME_FLOAT']);
-            $this->tstart = $mtime[1] + $mtime[0];
+            $this->tstart = $_SERVER['REQUEST_TIME_FLOAT'];
         }
         if(!isset($this->mstart))
             $this->mstart = memory_get_usage();
@@ -3614,6 +3613,7 @@ class DocumentParser {
         }
         else
         {
+            $alias = $this->db->escape($aliasPath);
             $rs = $this->db->select('id', '[+prefix+]site_content', "deleted=0 and alias='{$alias}'", 'parent, menuindex');
             $row = $this->db->getRow($rs);
             
