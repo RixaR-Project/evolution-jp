@@ -38,9 +38,6 @@ window.addEvent('domready', function() {
 	</script>
 	<div class="tab-page" id="tabGeneral">
 		<h2 class="tab"><?php echo $_lang['general'];?></h2>
-		<script type="text/javascript">
-			tpSettings.addTabPage(document.getElementById('tabGeneral'));
-		</script>
 		<table border="0" cellpadding="2" cellspacing="0">
 		 <tbody>
 		  <tr style="background-color:#fff;">
@@ -49,15 +46,6 @@ window.addEvent('domready', function() {
 		      <input type="text" name="message" class="inputbox" style="width:240px" value="<?php echo $form_v['message']; ?>" />
 		    </td>
 		  </tr>
-		</table>
-	</div>
-	<div class="tab-page" id="tabSettings">
-		<h2 class="tab"><?php echo $_lang['option'];?></h2>
-		<script type="text/javascript">
-			tpSettings.addTabPage(document.getElementById('tabSettings'));
-		</script>
-		<table border="0" cellpadding="2" cellspacing="0">
-		 <tbody>
 		  <tr>
 		    <td><b><?php echo $_lang["mgrlog_user"]?></b></td>
 		    <td align="right">
@@ -73,6 +61,12 @@ window.addEvent('domready', function() {
 		?>	</select>
 		    </td>
 		  </tr>
+		</table>
+	</div>
+	<div class="tab-page" id="tabSettings">
+		<h2 class="tab"><?php echo $_lang['option'];?></h2>
+		<table border="0" cellpadding="2" cellspacing="0">
+		 <tbody>
 		  <tr>
 		    <td><b><?php echo $_lang["mgrlog_action"]; ?></b></td>
 		    <td align="right">

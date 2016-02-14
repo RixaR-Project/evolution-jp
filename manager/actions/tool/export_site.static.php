@@ -25,8 +25,6 @@ tpExport = new WebFXTabPane(document.getElementById("exportPane"));
 <div class="tab-pane" id="exportPane">
 <div class="tab-page" id="tabMain">
 <h2 class="tab"><?php echo $_lang['export_site']?></h2>
-<script type="text/javascript">tpExport.addTabPage( document.getElementById( "tabMain" ) );</script>
-
 <?php
 
 if(isset($_POST['export']))
@@ -109,7 +107,7 @@ $repl_after  = $modx->getOption('export_repl_after',$modx->config['site_url']);
 </table>
 
 <ul class="actionButtons">
-	<li><a href="#" class="default" onclick="nanobar.go(20);document.exportFrm.submit();"><img src="<?php echo $_style["icons_save"] ?>" /> <?php echo $_lang["export_site_start"]; ?></a></li>
+	<li><a href="#" class="default" onclick="document.exportFrm.submit();"><img src="<?php echo $_style["icons_save"] ?>" /> <?php echo $_lang["export_site_start"]; ?></a></li>
 </ul>
 </form>
 
@@ -121,7 +119,6 @@ $repl_after  = $modx->getOption('export_repl_after',$modx->config['site_url']);
 </div>
 <div class="tab-page" id="tabHelp">
 <h2 class="tab"><?php echo $_lang['help']?></h2>
-<script type="text/javascript">tpExport.addTabPage( document.getElementById( "tabHelp" ) );</script>
 <?php
 	echo '<p>'.$_lang['export_site_message'].'</p>';
 ?>

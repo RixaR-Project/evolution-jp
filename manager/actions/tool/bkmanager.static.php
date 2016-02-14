@@ -152,7 +152,6 @@ else $ph['result_msg'] = '';
 	</script>
 	<div class="tab-page" id="tabBackup">
 	    <h2 class="tab"><?php echo $_lang['backup']?></h2>
-	    <script type="text/javascript">tpDBM.addTabPage(document.getElementById('tabBackup'));</script>
 	<form name="frmdb" method="post">
 	<input type="hidden" name="mode" value="" />
 	<p><?php echo $_lang['table_hoverinfo']?></p>
@@ -241,7 +240,6 @@ if ($totaloverhead > 0) {
 <div class="tab-page" id="tabRestore">
 	<h2 class="tab"><?php echo $_lang["bkmgr_restore_title"];?></h2>
 	<?php echo $ph['result_msg']; ?>
-	<script type="text/javascript">tpDBM.addTabPage(document.getElementById('tabRestore'));</script>
 	<?php echo $_lang["bkmgr_restore_msg"]; ?>
 	<form method="post" name="mutate" enctype="multipart/form-data" action="index.php">
 	<input type="hidden" name="a" value="305" />
@@ -340,7 +338,6 @@ if(isset($_SESSION['last_result']) || !empty($_SESSION['last_result']))
 <div class="tab-page" id="tabSnapshot">
 	<h2 class="tab"><?php echo $_lang["bkmgr_snapshot_title"];?></h2>
 	<?php echo $ph['result_msg']; ?>
-	<script type="text/javascript">tpDBM.addTabPage(document.getElementById('tabSnapshot'));</script>
 	<?php echo $modx->parseText($_lang["bkmgr_snapshot_msg"],"snapshot_path={$modx->config['snapshot_path']}");?>
 	<form method="post" name="snapshot" action="index.php">
 	<input type="hidden" name="a" value="307" />
@@ -350,7 +347,7 @@ if(isset($_SESSION['last_result']) || !empty($_SESSION['last_result']))
 	<tr><th><?php echo $_lang["bk.fileName"];?></th><td><input type="text" name="file_name" size="50" value="<?php echo $filename;?>" /></td></tr>
 	</table>
 	<div class="actionButtons" style="margin-top:10px;margin-bottom:10px;">
-	<a href="#" class="primary" onclick="nanobar.go(30);document.snapshot.save.click();"><img alt="icons_save" src="<?php echo $_style["icons_add"]?>" /><?php echo $_lang["bkmgr_snapshot_submit"];?></a>
+	<a href="#" class="primary" onclick="document.snapshot.save.click();"><img alt="icons_save" src="<?php echo $_style["icons_add"]?>" /><?php echo $_lang["bkmgr_snapshot_submit"];?></a>
 	<input type="submit" name="save" style="display:none;" />
 	</form>
 	</div>
@@ -372,7 +369,7 @@ if(is_array($files) && 0 < $total)
 {
 	echo '<ul>';
 	arsort($files);
-	$tpl = '<li>[+filename+] ([+filesize+]) (<a href="#" onclick="nanobar.go(30);document.restore2.filename.value=\'[+filename+]\';document.restore2.save.click()">' . $_lang["bkmgr_restore_submit"] . '</a>)</li>' . "\n";
+	$tpl = '<li>[+filename+] ([+filesize+]) (<a href="#" onclick="document.restore2.filename.value=\'[+filename+]\';document.restore2.save.click()">' . $_lang["bkmgr_restore_submit"] . '</a>)</li>' . "\n";
 	while ($file = array_shift($files))
 	{
 		$timestamp = filemtime($file);
