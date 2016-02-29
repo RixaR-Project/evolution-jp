@@ -839,7 +839,7 @@ class SubParser {
     }
     
     # Registers Startup Client-side JavaScript - these scripts are loaded at inside the <head> tag
-    function regClientStartupScript($src, $options)
+    function regClientStartupScript($src, $options=array('name'=>'', 'version'=>'0', 'plaintext'=>false))
     {
         $this->regClientScript($src, $options, true);
     }
@@ -1635,10 +1635,13 @@ class SubParser {
         
         $from = '[+prefix+]site_content sc LEFT JOIN [+prefix+]document_groups dg on dg.document = sc.id';
         
+        $access = '';
         if($modx->isFrontend())         $access = 'sc.privateweb=0';
         elseif($_SESSION['mgrRole']!=1) $access = 'sc.privatemgr=0';
-        if($docgrp = $modx->getUserDocGroups())
-            $access .= sprintf(' OR dg.document_group IN (%s)', join(',', $docgrp));
+        if($docgrp = $modx->getUserDocGroups()) {
+            if($access!=='') $access .= ' OR';
+            $access .= sprintf(' dg.document_group IN (%s)', join(',', $docgrp));
+        }
         
         $_ = array();
         $_[] = "sc.parent='{$parentid}'";
