@@ -2,7 +2,7 @@
 /**
 * prefectural List Language File
 * Version: 1.0
-* Date: 02/03/2017
+* Date: 02/03/2016
 * Array keys refer to the ID number that is saved in the database
 *
 */
