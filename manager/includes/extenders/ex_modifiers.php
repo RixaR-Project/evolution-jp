@@ -124,7 +124,7 @@ class MODIFIERS {
         {
             $lastKey = $m['cmd'];
         }
-        $_ = explode(',','equals,is,eq,notequals,isnot,isnt,ne,isgreaterthan,isgt,eg,islowerthan,islt,el,greaterthan,gt,lowerthan,lt,find,preg');
+        $_ = explode(',','is,equals,eq,notequals,isnot,isnt,ne,find,isgreaterthan,isgt,eg,islowerthan,islt,el,greaterthan,gt,lowerthan,lt,find,preg,preg_match,regex,is_file,is_dir,file_exists,is_readable,is_writable,in,wildcard_match,wcard_match,wildcard,wcard,fnmatch,is_image');
         if(in_array($lastKey,$_))
         {
             $modifiers[] = array('cmd'=>'then','opt'=>'1');
@@ -179,7 +179,7 @@ class MODIFIERS {
     {
         if($value!=='') return false;
         
-        $_ = explode(',', 'id,ifempty,input,if,equals,is,eq,notequals,isnot,isnt,ne,find,preg,or,and,show,this,then,else,select,switch,summary,smart_description,smart_desc,isinrole,ir,memberof,mo,is_file,is_dir,file_exists,is_readable,is_writable,in,wildcard_match,wcard_match,wildcard,wcard,fnmatch,is_image,regex,preg_match');
+        $_ = explode(',', 'id,ifempty,_default,default,input,if,equals,is,eq,notequals,isnot,isnt,ne,find,preg,or,and,show,this,then,else,select,switch,summary,smart_description,smart_desc,isinrole,ir,memberof,mo,is_file,is_dir,file_exists,is_readable,is_writable,in,wildcard_match,wcard_match,wildcard,wcard,fnmatch,is_image,regex,preg_match');
         if(in_array($cmd,$_)) return false;
         else                  return true;
     }
@@ -747,6 +747,7 @@ class MODIFIERS {
             #####  Special functions 
             case 'ifempty':
             case '_default':
+            case 'default':
                 if (empty($value)) return $opt; break;
             case 'ifnotempty':
                 if (!empty($value)) return $opt; break;
